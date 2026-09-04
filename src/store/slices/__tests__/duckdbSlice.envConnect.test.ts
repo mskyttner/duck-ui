@@ -43,9 +43,12 @@ vi.mock("../connectionSlice", () => ({
 
 import { createDuckdbSlice } from "../duckdbSlice";
 
-// duckdbSlice reads `window.env` — this test runs in vitest's node
-// environment, which has no `window`, so stub the minimal shape it needs.
+// duckdbSlice reads `window.env` and `self.crossOriginIsolated` — this test
+// runs in vitest's node environment, which has neither, so stub the minimal
+// shape it needs. (Bun's own runtime aliases `self` to `globalThis`, which
+// masked the missing stub locally; plain Node does not.)
 (globalThis as { window?: { env?: Window["env"] } }).window ??= {};
+(globalThis as { self?: typeof globalThis }).self ??= globalThis;
 
 describe("duckdbSlice.initialize — ENV connection auto-connect", () => {
   beforeEach(() => {
