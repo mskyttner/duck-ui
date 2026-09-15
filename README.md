@@ -94,6 +94,8 @@ Runtime environment variables (Docker):
 | `DUCK_UI_ALLOW_UNSIGNED_EXTENSIONS` | Allow unsigned DuckDB extensions | false |
 | `DUCK_UI_DUCKDB_WASM_USE_CDN` | Load DuckDB WASM from CDN | false |
 | `DUCK_UI_DUCKDB_WASM_BASE_URL` | Custom CDN base URL (the origin is added to the CSP automatically at container start) | auto jsDelivr |
+| `DUCK_UI_ANALYTICS_SCRIPT_URL` | Umami script URL for the baked-in analytics tag (origin added to the CSP automatically) | caioricciuti's instance |
+| `DUCK_UI_ANALYTICS_WEBSITE_ID` | Umami `data-website-id` for the analytics tag | caioricciuti's website id |
 
 Build-time: `DUCK_UI_BASEPATH=/subpath/` for subpath deploys, `DUCK_UI_DUCKDB_WASM_CDN_ONLY=true` for CDN-only artifacts.
 
