@@ -47,6 +47,8 @@ ENV DUCK_UI_EXTERNAL_USER=""
 ENV DUCK_UI_EXTERNAL_PASS=""
 ENV DUCK_UI_EXTERNAL_API_KEY=""
 ENV DUCK_UI_EXTERNAL_DATABASE_NAME=""
+ENV DUCK_UI_ANALYTICS_SCRIPT_URL=""
+ENV DUCK_UI_ANALYTICS_WEBSITE_ID=""
 
 # Create user and change ownership
 RUN addgroup -S duck-group -g 1001 && adduser -S duck-user -u 1001 -G duck-group

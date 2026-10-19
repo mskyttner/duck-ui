@@ -16,6 +16,8 @@ const envVars = {
   DUCK_UI_DUCKDB_WASM_USE_CDN: process.env.DUCK_UI_DUCKDB_WASM_USE_CDN === "true" || false,
   DUCK_UI_DUCKDB_WASM_BASE_URL: process.env.DUCK_UI_DUCKDB_WASM_BASE_URL || "",
   DUCK_UI_PYODIDE_BASE_URL: process.env.DUCK_UI_PYODIDE_BASE_URL || "",
+  DUCK_UI_ANALYTICS_SCRIPT_URL: process.env.DUCK_UI_ANALYTICS_SCRIPT_URL || "",
+  DUCK_UI_ANALYTICS_WEBSITE_ID: process.env.DUCK_UI_ANALYTICS_WEBSITE_ID || "",
   // Live sessions. Passed through as given, and left out when unset:
   // JSON.stringify drops undefined, and the client reads an empty STUN list
   // as "no STUN", which differs from "not configured" (use Google's).
@@ -38,6 +40,7 @@ fs.writeFileSync(envJsPath, `window.env = ${JSON.stringify(envVars)};\n`);
 const cdnBaseUrls = [
   ["WASM CDN", envVars.DUCK_UI_DUCKDB_WASM_BASE_URL],
   ["Pyodide", envVars.DUCK_UI_PYODIDE_BASE_URL],
+  ["Analytics", envVars.DUCK_UI_ANALYTICS_SCRIPT_URL],
 ];
 for (const [label, baseUrl] of cdnBaseUrls) {
   if (!/^https?:\/\//i.test(baseUrl)) continue;
@@ -56,6 +59,27 @@ for (const [label, baseUrl] of cdnBaseUrls) {
     console.log(`CSP widened for ${label} origin ${origin}`);
   } catch (error) {
     console.warn(`Could not widen CSP for the ${label} origin:`, error.message);
+  }
+}
+
+// A deployment can inject an Umami analytics tag at container start by setting
+// DUCK_UI_ANALYTICS_SCRIPT_URL (and optionally DUCK_UI_ANALYTICS_WEBSITE_ID).
+// When unset no tag is added, so the default image ships with no analytics.
+const analyticsScriptUrl = envVars.DUCK_UI_ANALYTICS_SCRIPT_URL;
+const analyticsWebsiteId = envVars.DUCK_UI_ANALYTICS_WEBSITE_ID;
+if (analyticsScriptUrl) {
+  try {
+    const websiteAttr = analyticsWebsiteId ? ` data-website-id="${analyticsWebsiteId}"` : "";
+    const tag = `<script async src="${analyticsScriptUrl}"${websiteAttr}></script>`;
+    const indexPath = path.join(outDir, "index.html");
+    let html = fs.readFileSync(indexPath, "utf8");
+    if (!html.includes(analyticsScriptUrl)) {
+      html = html.replace("</head>", `  ${tag}\n  </head>`);
+      fs.writeFileSync(indexPath, html);
+      console.log("Analytics tag injected for this deployment");
+    }
+  } catch (error) {
+    console.warn("Could not inject the analytics tag:", error.message);
   }
 }
 
